@@ -30,11 +30,19 @@ pipeline {
         }
 
         stage('Docker Info') {
-            steps {
-                sh 'docker --version'
-                sh 'docker compose version || docker-compose --version'
+    steps {
+        sh 'docker --version'
+        script {
+            def composeInstalled = sh(
+                script: 'docker compose version 2>/dev/null || docker-compose --version 2>/dev/null',
+                returnStatus: true
+            )
+            if (composeInstalled != 0) {
+                error("Docker Compose is not installed. Please install it on the Jenkins agent.")
             }
         }
+    }
+}
 
         stage('Create Network If Not Exists') {
             steps {
