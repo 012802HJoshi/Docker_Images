@@ -5,6 +5,8 @@ pipeline {
         APP_NAME = "node-app"
         IMAGE_NAME = "node-app-image"
         MONGO_COMPOSE_FILE = "docker-compose.yml"
+        MONGO_INITDB_ROOT_USERNAME: ${MONGO_USER}
+        MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
     }
 
     stages {
@@ -13,6 +15,20 @@ pipeline {
             steps {
                 checkout scm
             }
+        }
+
+        stage('Create Environment File') {
+            steps{
+               script {
+                    withCredentials([file(credentialsId: 'ENV_MONGO_DB', variable: 'ENV')]) {
+                        sh 'touch .env'
+                        sh 'chown jenkins:jenkins .env'
+                        sh 'chmod 664 .env'
+                        sh 'cp $ENV .env' 
+                    }
+               }
+            }
+            
         }
 
         stage('Docker Info') {
