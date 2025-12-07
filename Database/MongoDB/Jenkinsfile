@@ -1,2 +1,53 @@
+pipeline {
+    agent any
 
+    environment {
+        APP_NAME = "node-app"
+        IMAGE_NAME = "node-app-image"
+        MONGO_COMPOSE_FILE = "docker-compose.yml"
+    }
 
+    stages {
+
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('Docker Info') {
+            steps {
+                sh 'docker --version'
+                sh 'docker compose version || docker-compose --version'
+            }
+        }
+
+        stage('Create Network If Not Exists') {
+            steps {
+                sh '''
+                if ! docker network ls | grep db-network; then
+                  docker network create db-network
+                fi
+                '''
+            }
+        }
+
+        stage('Start MongoDB') {
+            steps {
+                sh '''
+                docker compose -f ${MONGO_COMPOSE_FILE} up -d
+                '''
+            }
+        }
+        }
+    }
+
+    post {
+        success {
+            echo "✅ Deployment Completed Successfully"
+        }
+        failure {
+            echo "❌ Deployment Failed"
+        }
+    }
+}
