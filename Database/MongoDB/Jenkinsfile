@@ -23,6 +23,7 @@ pipeline {
                         sh 'chown jenkins:jenkins .env'
                         sh 'chmod 664 .env'
                         sh 'cp $ENV .env' 
+                        sh 'echo "running Docker Container"'
                     }
                }
             }
