@@ -36,7 +36,6 @@ pipeline {
             }
         }
 
-        ✅✅✅ THIS IS THE CORRECT NETWORK STAGE
         stage('Create Network If Not Exists') {
             steps {
                 sh '''
@@ -57,7 +56,7 @@ pipeline {
             }
         }
 
-        ✅✅✅ THIS IS THE FIXED COMPOSE PATH
+  
         stage('Start MongoDB') {
             steps {
                 sh '''
