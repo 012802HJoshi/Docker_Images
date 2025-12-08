@@ -10,13 +10,13 @@ services:
       MONGO_INITDB_ROOT_USERNAME: ${MONGO_USER}
       MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
     volumes:
-      - ${VOLUME_NAME}:/data/db
+      - db-volume-mongo:/data/db
     networks:
-      - ${NETWORK_NAME}
+      - db-network-mongo
 
 volumes:
-  ${VOLUME_NAME}:
+  db-volume-mongo:
 
 networks:
-  ${NETWORK_NAME}:
+  db-network-mongo:
     external: true  

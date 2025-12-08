@@ -44,11 +44,11 @@ pipeline {
                     source Database/MongoDB/.env
                     set +a
 
-                    echo "✅ Required network: $NETWORK_NAME"
+                    echo "✅ Required network: db-network-mongo"
 
-                    if ! docker network ls | grep -q "$NETWORK_NAME"; then
-                        echo "✅ Creating Docker network: $NETWORK_NAME"
-                        docker network create "$NETWORK_NAME"
+                    if ! docker network ls | grep -q db-network-mongo; then
+                        echo "✅ Creating Docker network: db-network-mongo"
+                        docker network create db-network-mongo
                     else
                         echo "✅ Docker network already exists"
                     fi
@@ -56,13 +56,15 @@ pipeline {
             }
         }
 
-  
+
         stage('Start MongoDB') {
             steps {
                 sh '''
                     echo "✅ Starting MongoDB using Docker Compose..."
                     cd Database/MongoDB
-                    docker compose up -d
+                     docker compose pull "$CONTAINER_NAME"
+                     docker compose down
+                     docker compose up -d --force-recreate
                     echo "✅ MongoDB started"
                 '''
             }
