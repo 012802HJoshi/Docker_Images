@@ -31,7 +31,7 @@ pipeline {
         }
 
         stage('Docker Info') {
-    steps {
+        steps {
         sh 'docker --version'
         script {
             def composeInstalled = sh(
@@ -62,14 +62,5 @@ pipeline {
                 '''
             }
         }
-        }
-    }
-
-    post {
-        success {
-            echo "✅ Deployment Completed Successfully"
-        }
-        failure {
-            echo "❌ Deployment Failed"
         }
     }
