@@ -39,11 +39,6 @@ pipeline {
         stage('Create Network If Not Exists') {
             steps {
                 sh '''
-                    echo "✅ Loading ENV..."
-                    set -a
-                    source Database/MongoDB/.env
-                    set +a
-
                     echo "✅ Required network: db-network-mongo"
 
                     if ! docker network ls | grep -q db-network-mongo; then
