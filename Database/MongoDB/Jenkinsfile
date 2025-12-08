@@ -1,13 +1,6 @@
 pipeline {
     agent any
 
-    environment {
-        APP_NAME = "node-app"
-        IMAGE_NAME = "node-app-image"
-        MONGO_COMPOSE_FILE = "docker-compose.yml"
-        DOCKER_NETWORK = "db-network"
-    }
-
     stages {
 
         stage('Checkout') {
@@ -21,12 +14,15 @@ pipeline {
                 script {
                     withCredentials([file(credentialsId: 'ENV_MONGO_DB', variable: 'ENV')]) {
                         sh '''
-                            echo "Creating .env file..."
-                            touch .env
-                            chown jenkins:jenkins .env
-                            chmod 664 .env
-                            cp $ENV .env
-                            echo "✅ .env file created"
+                            echo "✅ Creating .env for MongoDB..."
+
+                            mkdir -p Database/MongoDB
+                            cp $ENV Database/MongoDB/.env
+
+                            chown jenkins:jenkins Database/MongoDB/.env
+                            chmod 600 Database/MongoDB/.env
+
+                            echo "✅ .env successfully placed in Database/MongoDB"
                         '''
                     }
                 }
@@ -36,40 +32,39 @@ pipeline {
         stage('Docker Info') {
             steps {
                 sh 'docker --version'
-                script {
-                    def composeInstalled = sh(
-                        script: 'docker compose version >/dev/null 2>&1',
-                        returnStatus: true
-                    )
-
-                    if (composeInstalled != 0) {
-                        error("❌ Docker Compose is not installed on this Jenkins agent.")
-                    } else {
-                        echo "✅ Docker Compose is available"
-                    }
-                }
+                sh 'docker compose version'
             }
         }
 
+        ✅✅✅ THIS IS THE CORRECT NETWORK STAGE
         stage('Create Network If Not Exists') {
             steps {
                 sh '''
-                    if ! docker network ls | grep -q ${DOCKER_NETWORK}; then
-                        echo "Creating Docker network: ${DOCKER_NETWORK}"
-                        docker network create ${DOCKER_NETWORK}
+                    echo "✅ Loading ENV..."
+                    set -a
+                    source Database/MongoDB/.env
+                    set +a
+
+                    echo "✅ Required network: $NETWORK_NAME"
+
+                    if ! docker network ls | grep -q "$NETWORK_NAME"; then
+                        echo "✅ Creating Docker network: $NETWORK_NAME"
+                        docker network create "$NETWORK_NAME"
                     else
-                        echo "Docker network already exists: ${DOCKER_NETWORK}"
+                        echo "✅ Docker network already exists"
                     fi
                 '''
             }
         }
 
+        ✅✅✅ THIS IS THE FIXED COMPOSE PATH
         stage('Start MongoDB') {
             steps {
                 sh '''
-                    echo "Starting MongoDB using Docker Compose..."
-                    docker compose -f ${MONGO_COMPOSE_FILE} up -d
-                    echo "✅ MongoDB deployment command executed"
+                    echo "✅ Starting MongoDB using Docker Compose..."
+                    cd Database/MongoDB
+                    docker compose up -d
+                    echo "✅ MongoDB started"
                 '''
             }
         }
@@ -77,8 +72,7 @@ pipeline {
         stage('Verify MongoDB') {
             steps {
                 sh '''
-                    echo "Verifying MongoDB container..."
-                    docker ps | grep mongodb
+                    docker ps | grep "$CONTAINER_NAME" || (echo "❌ MongoDB not running" && exit 1)
                 '''
             }
         }
