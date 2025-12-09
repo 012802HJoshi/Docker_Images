@@ -57,8 +57,7 @@ pipeline {
                 sh '''
                     echo "✅ Starting MongoDB using Docker Compose..."
                     cd Database/MongoDB
-                     docker compose pull "$CONTAINER_NAME"
-                     docker compose down
+                docker compose -f docker-compose.yml up -d
                      docker compose up -d --force-recreate
                     echo "✅ MongoDB started"
                 '''
